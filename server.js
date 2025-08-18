@@ -1,0 +1,74 @@
+require('dotenv').config()
+
+// Autenticação do Token
+const auth = function(req, res, next){
+    
+    if(!req.headers.token || req.headers.token != process.env.TOKEN){
+        console.log("Autenticação negada no IP: " )
+        res.status(401).send({
+            auth: "Não Autorizado!"
+        })
+        return
+    }
+
+    if(req.headers.token == process.env.TOKEN && req.method == "POST"){
+        console.log("Postagem realizada na rota: " + req.url)
+        next()
+        return
+    }
+    else if(req.headers.token == process.env.TOKEN && req.method == "GET"){
+        console.log("Consulta realizada na rota: " + req.url)
+        next()
+        return
+    }
+    else if(req.headers.token == process.env.TOKEN && req.method == "PUT"){
+        console.log("Alteração realizada na rota: " + req.url)
+        next()
+        return
+    }
+    else if(req.headers.token == process.env.TOKEN && req.method == "DELETE"){
+        console.log("Exclusão realizada na rota: " + req.url)
+        next()
+        return
+    }
+    console.log('caiu aqui')
+    res.send({
+        ok: 'ok'
+    })
+}
+
+// Criação do servidor Express
+const express = require('express')
+const cors = require('cors')
+const http = require('http')
+
+const app = express()
+
+app.use(cors({origin: "*"}))
+app.use(express.json())
+app.use(auth)
+
+const server = http.createServer(app)
+
+server.listen(process.env.PORT, (err) => {
+    if(err) throw err
+    console.log("Servidor Express Live!! Porta: ", process.env.PORT)
+})
+
+// Conexão com banco de dados Mysql
+const mysql = require('mysql2')
+
+const pool = mysql.createPool(process.env.DBURL)
+
+pool.getConnection((err, con) => {
+    if(err) throw err
+    console.log("Banco de dados conectado!!")
+    con.release()
+})
+
+// Exporta os módulos
+
+module.exports = {
+    app: app,
+    pool: pool
+}
