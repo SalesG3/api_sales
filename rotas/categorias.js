@@ -122,3 +122,13 @@ app.put('/categorias/:id_categoria/altera', async(req, res) => {
         })
     }
 })
+
+app.get('/categorias/:id_entidade/lookup', async(req, res) => {
+
+    let [data] = await pool.promise().execute(
+        `SELECT * FROM CATEGORIAS WHERE ID_ENTIDADE = ? AND SN_ATIVO = 1`,
+        [req.params.id_entidade]
+    )
+
+    res.status(200).send(data)
+})
