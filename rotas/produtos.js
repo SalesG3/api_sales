@@ -57,3 +57,27 @@ app.post('/produtos/:id_entidade/insert', async(req, res) => {
         })
     }
 })
+
+app.get('/produtos/:id_entidade/grid', async(req, res) => {
+
+    let [data] = await pool.promise().execute(
+        `SELECT * FROM GRID_PRODUTO WHERE ID_ENTIDADE = ? ORDER BY CD_PRODUTO`,
+        [req.params.id_entidade]
+    )
+
+    res.status(200).send(data)
+})
+
+app.get('/produtos/:id_produto/consulta', async(req, res) => {
+
+    let [data] = await pool.promise().execute(
+        `SELECT * FROM CONSULTA_PRODUTO WHERE ID_PRODUTO = ?`,
+        [req.params.id_produto]
+    )
+
+    res.status(200).send(data)
+})
+
+app.put('/produtos/:id_produto/altera', async(req, res) => {
+
+})
