@@ -2,9 +2,13 @@ require('dotenv').config()
 
 // Autenticação do Token
 const auth = function(req, res, next){
+
+    if(req.url.includes('/uploads')){
+        next()
+        return
+    }
     
     if(!req.headers.token || req.headers.token != process.env.TOKEN){
-        console.log("Autenticação negada no IP: " )
         res.status(401).send({
             auth: "Não Autorizado!"
         })
@@ -31,10 +35,6 @@ const auth = function(req, res, next){
         next()
         return
     }
-    console.log('caiu aqui')
-    res.send({
-        ok: 'ok'
-    })
 }
 
 // Criação do servidor Express
@@ -47,6 +47,7 @@ const app = express()
 app.use(cors({origin: "*"}))
 app.use(express.json())
 app.use(auth)
+app.use("/uploads", express.static("uploads"))
 
 const server = http.createServer(app)
 
