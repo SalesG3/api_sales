@@ -79,6 +79,14 @@ app.delete('/categorias/:id_categoria/delete', async(req, res) => {
         })
     }
     catch(err){
+        if(err.code == "ER_ROW_IS_REFERENCED_2"){
+            res.status(200).send({
+                sucesso: false,
+                mensagem: "Esse registro possui dependências!"
+            })
+            return
+        }
+
         console.log(err)
 
         res.status(500).send({

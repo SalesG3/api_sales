@@ -81,7 +81,6 @@ app.get('/produtos/:id_produto/consulta', async(req, res) => {
 app.put('/produtos/:id_produto/altera', async(req, res) => {
 
     let {
-        IMG_PRODUTO     ,
         CD_PRODUTO      ,
         NM_PRODUTO      ,
         DS_PRODUTO      ,
@@ -103,8 +102,7 @@ app.put('/produtos/:id_produto/altera', async(req, res) => {
 
         res.status(200).send({
             sucesso: true,
-            mensagem: "Registro atualizado com sucesso!",
-            ID_PRODUTO: data[0].ID_PRODUTO
+            mensagem: "Registro atualizado com sucesso!"
         })
     }
     catch(err){
@@ -127,24 +125,46 @@ app.put('/produtos/:id_produto/altera', async(req, res) => {
     }
 })
 
-const multer = require('multer')
-const upload = multer({ dest: 'uploads/'})
 const fs = require('fs')
+app.delete('/produtos/:id_produto/delete', async(req, res) =>{
 
-app.post('/produtos/:id_produto/imagem', upload.single('file'), async(req, res) => {
-    
-    let img_name = req.file.destination + req.params.id_produto + ".jpg"
+    try{
+        let [data] = await pool.promise().execute(
+            `SELECT IMG_PRODUTO FROM PRODUTOS WHERE ID_PRODUTO = ?`,
+            [req.params.id_produto]
+        )
 
-    fs.renameSync(req.file.path, img_name)
+        if(data[0].IMG_PRODUTO != null){
+            let img_path = `./uploads/${req.params.id_produto}.jpg`
+            fs.unlink(img_path, (err) => { if(err) throw err })
+        }
 
-    let img_url = `http://localhost:8083/uploads/${req.params.id_produto}.jpg`
+        [data] = await pool.promise().execute(
+            `DELETE FROM PRODUTOS WHERE ID_PRODUTO = ?`,
+            [req.params.id_produto]
+        )
+
+        res.status(200).send({
+            sucesso: true,
+            mensagem: "Registro excluido com sucesso!"
+        })
+    }
+    catch(err){
+        console.log(err)
+        res.status(500).send({
+            sucesso: false,
+            mensagem: "Falha! Erro desconhecido."
+        })
+        return
+    }
+})
+
+app.get('/produtos/:id_entidade/lookup', async(req, res) => {
 
     let [data] = await pool.promise().execute(
-        `UPDATE PRODUTOS SET IMG_PRODUTO = ? WHERE ID_PRODUTO = ?`,
-        [img_url, req.params.id_produto]
+        `SELECT * FROM PRODUTOS WHERE ID_ENTIDADE = ? AND SN_ATIVO = 1`,
+        [req.params.id_entidade]
     )
 
-    res.status(200).send({
-        sucesso: true
-    })
+    res.status(200).send(data)
 })
