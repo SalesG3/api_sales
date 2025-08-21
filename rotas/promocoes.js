@@ -34,12 +34,17 @@ app.post('/promocoes/:id_entidade/insert', async(req, res) => {
             ]
         )
 
-        let query = 'INSERT INTO ITENS_PROMOCAO (ID_PROMOCAO, ID_PRODUTO, VL_PRODUTO)' // Continuar aqui
-        for(let i = 0; i < ITENS.length; i++){
-            query += `` 
-        }
+        let [itens] = await con.execute(
+            `CALL INSERT_ITENS ( ?, ?)`,
+            [data[0][0].ID_PROMOCAO, JSON.stringify(ITENS)]
+        )
 
+        await con.commit()
 
+        res.status(200).send({
+            sucesso: true,
+            mensagem: "Registro salvo com sucesso!"
+        })
     
         con.release()
     }
@@ -55,4 +60,60 @@ app.post('/promocoes/:id_entidade/insert', async(req, res) => {
 
         con.release()
     }
+})
+
+app.get('/promocoes/:id_entidade/grid', async(req, res) => {
+
+    let [data] = await pool.promise().execute(
+        `SELECT * FROM GRID_PROMOCAO WHERE ID_ENTIDADE = ?`,
+        [req.params.id_entidade]
+    )
+
+    res.status(200).send(data)
+})
+
+app.delete('/promocoes/:id_promocao/delete', async(req, res) => {
+
+    try{
+
+        let [data] = await pool.promise().execute(
+            `CALL DELETE_PROMOCAO ( ? )`,
+            [req.params.id_promocao]
+        )
+
+        res.status(200).send({
+            sucesso: true,
+            mensagem: "Registro excluido com sucesso!"
+        })
+    }
+    catch(err){
+        console.log(err)
+
+        res.status(500).send({
+            sucesso: false,
+            mensagem: "Falha! Erro desconhecido."
+        })
+    }
+})
+
+app.get('/promocoes/:id_promocao/consulta', async(req, res) => {
+
+    let [registro] = await pool.promise().execute(
+        `SELECT * FROM CONSULTA_PROMOCAO WHERE ID_PROMOCAO = ?`,
+        [req.params.id_promocao]
+    )
+
+    let [itens] = await pool.promise().execute(
+        `SELECT * FROM CONSULTA_ITENS WHERE ID_PROMOCAO = ?`,
+        [req.params.id_promocao]
+    )
+
+    let data = Object.assign(registro[0], {ITENS: itens})
+
+    res.status(200).send(data)
+})
+
+app.put('/promocoes/:id_promocao/altera', async(req, res) =>{
+
+    // CONSULTA OS QUE ESTÃO, APAGA OS QUE NÃO ESTIVEREM NO ARRAY E TRATA COM INSERT ON DUP KEY UPDATE
 })
