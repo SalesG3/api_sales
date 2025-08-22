@@ -21,12 +21,21 @@ app.post('/admin/login', async(req, res) => {
             [CD_ENTIDADE]
         )
 
+        if(data.length == 0){
+            res.status(200).send({
+                sucesso: false,
+                mensagem: "Usuário não encontrado!"
+            })
+            return
+        }
+
         bcrypt.compare(USER_SENHA, data[0].USER_SENHA, (invalido, sucesso) => {
             if(sucesso){
                 res.status(200).send({
                     sucesso: true,
                     ID_ENTIDADE: data[0].ID_ENTIDADE,
-                    NM_ENTIDADE: data[0].NM_ENTIDADE
+                    NM_ENTIDADE: data[0].NM_ENTIDADE,
+                    IMG_ENTIDADE: data[0].IMG_ENTIDADE
                 })
             }
             else{

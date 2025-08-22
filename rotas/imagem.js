@@ -23,3 +23,21 @@ app.post('/produtos/:id_produto/imagem', upload.single('file'), async(req, res) 
         sucesso: true
     })
 })
+
+app.post('/entidades/:id_entidade/imagem', upload.single('file'), async(req, res) => {
+
+    let img_name = req.file.destination + "LOGO_" + req.params.id_entidade + '.png'
+
+    fs.renameSync(req.file.path, img_name)
+
+    let img_url = `http://192.168.0.134:8083/uploads/LOGO_${req.params.id_entidade}.png`
+
+    let [data] = await pool.promise().execute(
+        `UPDATE ENTIDADES SET IMG_ENTIDADE = ? WHERE ID_ENTIDADE = ?`,
+        [img_url, req.params.id_entidade]
+    )
+
+    res.status(200).send({
+        sucesso: true
+    })
+})
