@@ -115,5 +115,41 @@ app.get('/promocoes/:id_promocao/consulta', async(req, res) => {
 
 app.put('/promocoes/:id_promocao/altera', async(req, res) =>{
 
-    // CONSULTA OS QUE ESTÃO, APAGA OS QUE NÃO ESTIVEREM NO ARRAY E TRATA COM INSERT ON DUP KEY UPDATE
+    let {
+        CD_PROMOCAO ,
+        DT_INICIO   ,
+        DT_FINAL    ,
+        NM_PROMOCAO ,
+        DS_PROMOCAO ,
+        ITENS       ,
+    } = req.body
+
+    try{
+        let [data] = await pool.promise().execute(
+            `CALL UPDATE_PROMOCAO ( ?, ?, ?, ?, ?, ?)`,
+            [
+                req.params.id_promocao, CD_PROMOCAO, DT_INICIO,
+                DT_FINAL, NM_PROMOCAO, DS_PROMOCAO
+            ]
+        )
+
+        let [itens] = await pool.promise().execute(
+            `CALL UPDATE_ITENS ( ?, ?)`,
+            [req.params.id_promocao, JSON.stringify(ITENS)]
+        )
+
+        res.status(200).send({
+            sucesso: true,
+            mensagem: "Registro atualizado com sucesso!"
+        })
+
+    }
+    catch(err){
+        console.log(err)
+
+        res.status(500).send({
+            sucesso: false,
+            mensagem: "Falha! Erro desconhecido."
+        })
+    }
 })
